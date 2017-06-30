@@ -45,4 +45,4 @@ void lr_turn(int n1, int n2)
 ```
 
 ## 実行結果
-<img src="https://github.com/YoshitakaKido/Multimedia_Exercise/blob/master/practice1_0420/practice1.pgm" alt="実行結果">
+<img src="practice1.pgm" alt="実行結果">
