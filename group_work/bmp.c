@@ -1,14 +1,14 @@
 #include "image.h"
-typedef unsigned long DWORD;
-typedef int BOOL;
-typedef unsigned short WORD;
-typedef unsigned long LONG;
+typedef unsigned long   DWORD;
+typedef int             BOOL;
+typedef unsigned short  WORD;
+typedef unsigned long   LONG;
 
 
-#define BI_RGB 0L;
-#define BI_RLE8 1L;
-#define BI_RLE4 2L;
-#define BI_BITFIELDS 3L;
+#define BI_RGB          0L
+#define BI_RLE8         1L
+#define BI_RLE4         2L
+#define BI_BITFIELDS    3L
 
 typedef struct tagBITMAPFILEHEADER{
   WORD bfType;
@@ -30,8 +30,8 @@ typedef struct tagBITMAPCOREHEADER{
 
 typedef struct tagBITMAPINFOHEADER{
   DWORD biSize;
-  WORD biWidth;
-  WORD biHeight;
+  LONG biWidth;
+  LONG biHeight;
   WORD biPlanes;
   WORD biBitCount;
   DWORD biCompression;
@@ -40,64 +40,71 @@ typedef struct tagBITMAPINFOHEADER{
   LONG biYPelsPerMeter;
   DWORD biClrUsed;
   DWORD biClrImportant;
-} BITMAPINFOHEADER *PBITMAPINFOHEADER;
+} BITMAPINFOHEADER, *PBITMAPINFOHEADER;
 
 #define MAXCOLORS 256
 
+/* ファイルより2バイト整数を書き込む(リトルエンディアン) */
 int fwriteWORD(WORD val, FILE *fp)
 {
-  int i,c;
+  int i, c;
 
-  c=val;
+  c = val;
   for(i=0;i<2;i++){
-    fputc(c%256fp);
-    c/=256;
+    fputc(c % 256, fp);
+    c /= 256;
   }
   return TRUE;
 }
 
-int fwriteDWORD(WORD val, FILE *fp)
+/* ファイルより4バイト整数を書き込む(リトルエンディアン) */
+int fwriteDWORD(DWORD val, FILE *fp)
 {
-  int i,c;
+  int i, c;
 
-  c=val;
+  c = val;
   for(i=0;i<4;i++){
-    fputc(c%256fp);
-    c/=256;
+    fputc(c % 256,fp);
+    c /= 256;
   }
   return TRUE;
 }
 
+/* ファイルより2バイト整数を読み込む(リトルエンディアン) */
 int freadWORD(WORD *res, FILE *fp)
 {
-  int i,c;
+  int i, c;
   int val[2];
 
   for(i=0;i<2;i++){
-    c=fgetc(fp);
-    if(c==EOF) retuen FALSE;
-    val[i]=c;
+    c = fgetc(fp);
+    if(c == EOF) return FALSE;
+    val[i] = c;
   }
   *res = val[1]*256+val[0];
   return TRUE;
 }
-int freadDWORD(WORD *res, FILE *fp)
+
+/* ファイルより4バイト整数を読み込む(リトルエンディアン) */
+int freadDWORD(DWORD *res, FILE *fp)
 {
-  int i,c;
+  int i, c;
   int val[4];
-  DWORD tmp=0;
+  DWORD tmp = 0;
 
 
-  for(i=0;i<4;i++){
-    c=fgetc(fp);
-    if(c==EOF) retuen FALSE;
-    val[i]=c;
+  for(i = 0; i < 4; i++){
+    c = fgetc(fp);
+    if(c == EOF) return FALSE;
+    val[i] = c;
   }
-  tmp=0;
-  for(i=3;i>=0;i--){
-    tmp*=256;
-    tmp+=val[i];
+
+  tmp = 0;
+  for(i = 3; i >= 0; i--){
+    tmp *= 256;
+    tmp += val[i];
   }
+
   *res = tmp;
   return TRUE;
 }
@@ -105,7 +112,7 @@ int freadDWORD(WORD *res, FILE *fp)
 static BOOL IsWinDIB(BITMAPINFOHEADER* pBIH)
 {
   if(((BITMAPCOREHEADER*)pBIH)->bcSize == sizeof(BITMAPCOREHEADER)){
-    retuen FALSE;
+    return FALSE;
   }
   return TRUE;
 }
@@ -186,6 +193,7 @@ int readBMPfile(char *fname,ImageData **img)
     return -1;
   }
 
+  /* BMPファイルは必ず'BM(0x4d42)'で始まる。それ以外の場合はBMPではないので、中止する */
   if(!freadWORD(&HEAD_bfType,fp)){
     errcode=-2;
     goto $ABORT;
@@ -196,6 +204,7 @@ int readBMPfile(char *fname,ImageData **img)
     goto $ABORT;
   }
 
+  /* ヘッダ部のサイズ(byte) */
   if(!freadDWORD(&HEAD_bfSize,fp)){
     errcode=-10;
     goto $ABORT;
@@ -211,8 +220,10 @@ int readBMPfile(char *fname,ImageData **img)
     goto $ABORT;
   }
 
-  if(INFO_bfSize==40||INFO_bfSize==12){
+  if(INFO_bfSize == 40 || INFO_bfSize == 12){
     BMPInfo.biSize=INFO_bfSize;
+    
+    /* BITMAPCOREHEADER形式の場合 */
     if(INFO_bfSize == sizeof(BITMAPCOREHEADER)){
       WORD tmp;
       isPM = TRUE;
@@ -234,23 +245,31 @@ int readBMPfile(char *fname,ImageData **img)
         goto $ABORT;
       }
     }
+    /* BITMAPINFOHEADER形式の場合 */
     else{
-      if(!freadDWORD(&(BMPInfo.biWidth),fp)){
-        errcode=-10;
-        goto $ABORT;
-      }
-      if(!freadDWORD(&(BMPInfo.biHeight),fp)){
-        errcode=-10;
-        goto $ABORT;
-      }
-      if(!freadWORD(&(BMPInfo.biPlanes),fp)){
-        errcode=-10;
-        goto $ABORT;
-      }
-      if(!freadWORD(&(BMPInfo.biBitCount),fp)){
-        errcode=-10;
-        goto $ABORT;
-      }
+        /* 画像の横幅 */
+        if(!freadDWORD(&(BMPInfo.biWidth), fp)){
+            errcode =- 10;
+            goto $ABORT;
+        }
+
+        /* 画像の縦幅 */
+        if(!freadDWORD(&(BMPInfo.biHeight), fp)){
+            errcode =- 10;
+            goto $ABORT;
+        }
+
+        /* 画像のプレーン数 */
+        if(!freadWORD(&(BMPInfo.biPlanes), fp)){
+            errcode =- 10;
+            goto $ABORT;
+        }
+
+        /* 1画素あたりのビット数 */
+        if(!freadWORD(&(BMPInfo.biBitCount), fp)){
+            errcode=-10;
+            goto $ABORT;
+        }
     }
 
     if(!isPM){
@@ -283,19 +302,22 @@ int readBMPfile(char *fname,ImageData **img)
     goto $ABORT;
   }
 
-  mx=BMPInfo.biWidth;
-  my=BMPInfo.biHeight;
-  depth=BMPInfo.biBitCount;
+  mx = BMPInfo.biWidth;
+  my = BMPInfo.biHeight;
+  depth = BMPInfo.biBitCount;
 
-  if(depth!=8&&depth!=24){
-    errcode=-3;
+  /* 256色, フルカラー以外はサポート外 */
+  if(depth != 8 && depth != 24){
+    errcode =- 3;
     goto $ABORT;
   }
-  if(BMPInfo.biCompression!=BI_RGB){
-    errcode=-20;
+  
+  /* 非圧縮形式以外はサポート外 */
+  if(BMPInfo.biCompression != BI_RGB){
+    errcode =- 20;
     goto $ABORT;
   }
-  if(BMPInfo.biClrUsed==0){
+  if(BMPInfo.biClrUsed == 0){
     colors=count0fDIBColorEntries(BMPInfo.biBitCount);
   }
   else{
@@ -335,16 +357,16 @@ int readBMPfile(char *fname,ImageData **img)
     }
   }
 
-  *img=createImage(mx.my,24);
-  mxb=getDIBxmax(mx,depth);
-  pad=mxb-mx*depth/8;
+  *img = createImage(mx, my, 24);
+  mxb = getDIBxmax(mx, depth);
+  pad = mxb-mx*depth/8;
 
-  for(y=my-1>=0;y--){
-    for(x=0;x<mx;x++){
-      if(depth==8){
-        c=fgetc(fp);
-        if(c=EOF){
-          errcode=-20;
+  for(y = my-1; y >= 0; y--){
+    for(x = 0; x < mx; x++){
+      if(depth == 8){
+        c = fgetc(fp);
+        if(c = EOF){
+          errcode =- 20;
           goto $ABORT;
         }
         setcolor.r=palet[c].r;
@@ -414,28 +436,28 @@ int writeBMPfile(char *fname,ImageData *img)
     goto $abort1;
   }
 
-  if(depth==24){
-    pbyte=1;
+  if(depth == 24){
+    pbyte = 1;
   }
   else{
-    pbyte=depth/8;
+    pbyte = depth / 8;
   }
-  if(depth>=24){
-    palsize=0;
+  if(depth >= 24){
+    palsize = 0;
   }
   else{
-    palsize=256;
+    palsize = 256;
   }
 
 
-  rw=getDIBxmax(w,depth);
+  rw=getDIBxmax(w, depth);
 
-  bfn.bfType=0x4d42;
-  bfn.bfSize=14+40+/*sizeof(BITMAPFILEHEADER)+sizeof(BITMAPINFOHEADER)+*/palsize*4/*sizeof(RGBQUAD)*/+rw*h*pbyte;
+  bfn.bfType = 0x4d42;
+  bfn.bfSize = 14+40+/* sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + */ palsize * 4 /* sizeof(RGBQUAD) */ + rw * h * pbyte;
 
-  bfn.bfReserved1=0;
-  bfn.bfReserved2=0;
-  bfn.bf0ffBits=14+40+/*sizeof(BITMAPFILEHEADER)+sizeof(BITMAPINFOHEADER)+*/palsize*4/*sizeof(RGBQUAD)*/;
+  bfn.bfReserved1 = 0;
+  bfn.bfReserved2 = 0;
+  bfn.bf0ffBits = 14 + 40 + /* sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + */ palsize * 4 /* sizeof(RGBQUAD) */;
 
 
   if((fp=fopen(fname,"wb"))==NULL){
@@ -443,33 +465,36 @@ int writeBMPfile(char *fname,ImageData *img)
     goto $abort1;
   }
 
-  fwriteWORD(bfn.bfType,fp);
-  fwriteDWORD(bfn.bfSize,fp);
-  fwriteWORD(bfn.bfReserved1,fp);
-  fwriteWORD(bfn.bfReserved2,fp);
-  fwriteDWORD(bfn.bf0ffBits,fp);
-  fwriteDWORD(40/*sizeof(BITMAPINFOHEADER)+*/,fp);
-  fwriteDWORD(w,fp);
-  fwriteDWORD(h,fp);
-  fwriteWORD(l,fp);
-  fwriteWORD(depth,fp);
-  fwriteDWORD(BI_RGB,fp);
-  fwriteDWORD(0,fp);
-  fwriteDWORD(300,fp);
-  fwriteDWORD(300,fp);
-  fwriteDWORD(0,fp);
-  fwriteDWORD(0,fp);
+  fwriteWORD(bfn.bfType, fp);
+  fwriteDWORD(bfn.bfSize, fp);
+  fwriteWORD(bfn.bfReserved1, fp);
+  fwriteWORD(bfn.bfReserved2, fp);
+  fwriteDWORD(bfn.bf0ffBits, fp);
+  fwriteDWORD(40 /* sizeof(BITMAPINFOHEADER) */, fp);
+  fwriteDWORD(w, fp);   /* biWidth */
+  fwriteDWORD(h, fp);   /* biHeight */
+  fwriteWORD(1, fp);    /* biPlanes */
+  fwriteWORD(depth, fp);    /*biBitCount */
+  fwriteDWORD(BI_RGB, fp);  /* biCompression */
+  fwriteDWORD(0, fp);       /* biSizeImage */
+  fwriteDWORD(300, fp);     /* biXPelsPerMeter */
+  fwriteDWORD(300, fp);     /* biYPelsPerMeter */
+  fwriteDWORD(0, fp);       /* biClrUsed */
+  fwriteDWORD(0, fp);       /* biClrImportant */
 
-  pad=rw-w*depth/8;
+  /* 必要なパディングのサイズ */
+  pad = rw - w * depth / 8;
+
+  /* 画像データの書き出し */
   for(y=h-1;y>=0;y--){
     for(x=0;x<w;x++){
-      getPixel(img.x.y,&pix);
-      fputc(pix,b,fp);
-      fputc(pix,g,fp);
-      fputc(pix,r,fp);
+      getPixel(img, x, y, &pix);
+      fputc(pix.b, fp);
+      fputc(pix.g, fp);
+      fputc(pix.r, fp);
     }
     for(i=0;i<pad;i++){
-      fputc(0,fp);
+      fputc(0, fp);
     }
   }
   return 0;

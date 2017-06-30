@@ -55,12 +55,12 @@ void desposeImage(ImageData *img){
 int getPixel(ImageData *img, int x, int y, Pixel *pix){
     int ret = 1;
     int adr;    /* 画素の画像上の位置 */
-    int dep. val;
+    int dep, val;
     BYTE *pixels;
 
     if(img == NULL)
         return -1;
-    if(imt->pixels == NULL)
+    if(img->pixels == NULL)
         return -1;
 
     /* 画像外の座標が指定された場合の処理(最も近い画像上の画素を参照する) */
@@ -76,7 +76,7 @@ int getPixel(ImageData *img, int x, int y, Pixel *pix){
         y = 0;
         ret = 0;
     }
-    if(y >= img-=height){
+    if(y >= img->height){
         y = img->height -1;
         ret = 0;
     }
@@ -134,7 +134,7 @@ int setPixel(ImageData *img, int x, int y, Pixel *pix){
     if(x < 0 || x >= img->width || y < 0 || y >= img->height)
         return 0;
 
-    dep = ima->depth;
+    dep = img->depth;
     adr = x + y * img->width;
     pixels = img->pixels;
 
