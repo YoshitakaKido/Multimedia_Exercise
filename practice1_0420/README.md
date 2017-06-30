@@ -1,3 +1,10 @@
+# Practice1
+
+## 課題内容
+元の画像(LENNA.pgm)を180度回転させたものを出力せよ
+
+## ソースコード
+```c
 #include<stdio.h>
 #include"pgm.h"
 
@@ -34,3 +41,8 @@ void lr_turn(int n1, int n2)
             image[n2][x][y] = image[n1][width[n1]-1-x][height[n1]-1-y];
     }
 }
+
+```
+
+## 実行結果
+![実行結果](https://github.com/YoshitakaKido/Multimedia_Exercise/practice1_0420/practice1.pgm)
