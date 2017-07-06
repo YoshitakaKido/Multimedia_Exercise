@@ -160,12 +160,12 @@ int getDIBxmax(int mx, int dep)
   }
   return mx;
 }
-
+// BMPデータをファイルより読み込む
 int readBMPfile(char *fname,ImageData **img)
 {
   int i,c;
-  int errcode=0;
-  BITMAPFILEHEADER BMPFILE;
+  int errcode = 0;
+  BITMAPFILEHEADER BMPFile;
   int fsize;
   BITMAPINFOHEADER BMPInfo;
   BITMAPCOREHEADER BMPCore;
@@ -173,11 +173,13 @@ int readBMPfile(char *fname,ImageData **img)
   int colorTableSize;
   int bitsSize;
   int BISize;
-  int x,y;
-  int mx,my,depth;
+  int x, y;
+  int mx, my, depth;
   int pad;
-  int mxb,myb;
-  int isPM=FALSE;
+  int mxb, myb;
+
+  // BMPの形式を記録するフラグ
+  int isPM = FALSE;
   FILE *fp;
 
   WORD HEAD_bfType;
@@ -205,33 +207,52 @@ int readBMPfile(char *fname,ImageData **img)
   }
 
   /* ヘッダ部のサイズ(byte) */
-  if(!freadDWORD(&HEAD_bfSize,fp)){
+  if(!freadDWORD(&HEAD_bfSize, fp)){
     errcode=-10;
     goto $ABORT;
   }
 
-  if(!freadWORD(&HEAD_bfReserved1,fp)){
+  //予約用領域(未使用)
+  if(!freadWORD(&HEAD_bfReserved1, fp)){
     errcode=-10;
     goto $ABORT;
   }
 
-  if(!freadDWORD(&INFO_bfSize,fp)){
+  //予約用領域(未使用)  
+  if(!freadWORD(&HEAD_bfReserved2, fp)){
     errcode=-10;
     goto $ABORT;
   }
 
+  //オフセット
+  if(!freadDWORD(&HEAD_bf0ffBits, fp)) {
+    errcode=-10;
+    goto $ABORT;
+  }
+
+  //ヘッダ部のサイズ
+  if(!freadDWORD(&INFO_bfSize, fp)){
+    errcode=-10;
+    goto $ABORT;
+  }
+
+  //ヘッダ部のサイズが規定外ならばエラーとする
   if(INFO_bfSize == 40 || INFO_bfSize == 12){
-    BMPInfo.biSize=INFO_bfSize;
+    BMPInfo.biSize = INFO_bfSize;
     
     /* BITMAPCOREHEADER形式の場合 */
     if(INFO_bfSize == sizeof(BITMAPCOREHEADER)){
       WORD tmp;
       isPM = TRUE;
+ 
+      // 画像の横幅
       if(!freadWORD(&tmp,fp)){
         errcode=-10;
         goto $ABORT;
       }
       BMPInfo.biWidth=tmp;
+
+      // 画像の縦幅
       if(!freadWORD(&tmp,fp)){
         errcode-10;
         goto $ABORT;
