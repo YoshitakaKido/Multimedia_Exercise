@@ -13,7 +13,7 @@ main(int ac,char *av[]){
     
     outimg = createImage(img->width, img->height, img->depth);
 
-    printf("read[%s]\n",fname);
+    printf("read[%s]\n", fname);
     //----------------ここから-----------------------
    
 
@@ -26,5 +26,3 @@ main(int ac,char *av[]){
     //メモリ解放
     disposeImage(img);
 }
-
-

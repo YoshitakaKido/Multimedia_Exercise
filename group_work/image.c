@@ -1,7 +1,7 @@
 #include "image.h"
 /*
  * 画像データ作成
- * width: 画像の横幅, height: 画像の縦幅
+ * width: 画像の横幅, height: 画像の縦幅, depth: 1画素あたりのビット数(8 or 24)
  */
 ImageData* createImage(int width, int height, int depth){
     ImageData *newimg;
@@ -9,6 +9,8 @@ ImageData* createImage(int width, int height, int depth){
 
     if(width < 0 || height < 0)
         return NULL;
+
+    // 1画素あたりのビット数(8, 24以外はエラー)
     if(depth != 8 && depth != 24)
         return NULL;
 

@@ -11,13 +11,13 @@ typedef unsigned long   LONG;
 #define BI_BITFIELDS    3L
 
 typedef struct tagBITMAPFILEHEADER{
-  WORD bfType;
-  DWORD bfSize;
-  WORD bfReserved1;
-  WORD bfReserved2;
-  DWORD bf0ffBits;
+    WORD bfType;
+    DWORD bfSize;
+    WORD bfReserved1;
+    WORD bfReserved2;
+    DWORD bf0ffBits;
 
-}BITMAPFILEHEADER, *PBITMAPFILEHEADER;
+} BITMAPFILEHEADER, *PBITMAPFILEHEADER;
 
 
 typedef struct tagBITMAPCOREHEADER{
