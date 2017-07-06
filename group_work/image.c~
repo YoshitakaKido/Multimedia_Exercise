@@ -38,7 +38,7 @@ ImageData* createImage(int width, int height, int depth){
 /*
  * 画像データの廃棄
  */
-void disposeImage(ImageData *img){
+void desposeImage(ImageData *img){
     if(img->pixels != NULL)
         free(img->pixels);
 
