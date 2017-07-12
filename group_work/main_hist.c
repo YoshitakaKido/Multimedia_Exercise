@@ -1,6 +1,8 @@
 #include "image.h"
 
-/* long int hist[256]; */
+
+#define COLORMAX 256
+
 void make_histogram(int n);
 void make_histogram_image(int h, int n);
 
@@ -8,82 +10,82 @@ void make_histogram_image(int h, int n);
 main(int ac,char *av[]){
 
     char *fname = "rgb.bmp";
-    char *wname = "out.bmp";
-    int x,y;
+    char *wname = "out_hist.bmp";
+    int x,y,i;
     ImageData *img; //入力画像
     ImageData *outimg;
-    Pixel *iro;
-    iro=0;
-
+    Pixel *pix;
+    int hist[256][3]={{0},{0}};
+    Pixel *max;
+    Pixel *takasa;
+    int max_color;
+    pix=malloc(sizeof(void*));
+    max=malloc(sizeof(void*));
+    takasa=malloc(sizeof(void*));
 
     //ファイルの読み込み
     readBMPfile(fname, &img);
-    outimg = createImage(img->width, img->height, img->depth);
+    outimg = createImage(COLORMAX, COLORMAX, img->depth);
     printf("read[%s]\n", fname);
 
     for(y=0; y < img->height ;y++){
       for(x=0;x < img->width ;x++){
-        printf("a\n");
-        getPixel(img,x,y,iro);
-        printf("a\n");
-        setPixel(outimg,x,y,iro);
+        getPixel(img,x,y,pix);
+        hist[pix->r][0]++;
+        hist[pix->g][1]++;
+        hist[pix->b][2]++;
+        //        setPixel(outimg,x,y,pix);
       }
     }
+    max->r=PIXELMIN;
+    max->g=PIXELMIN;
+    max->b=PIXELMIN;
+
+
+
     //----------------ここから-----------------------
-/* for(i=0; i<256; i++){ */
-/*   hist[i] = 0; */
-/* } */
+    for(i=0;i<COLORMAX;i++){
+      if(hist[i][0]>max->r)max->r=hist[i][0];
+      if(hist[i][1]>max->g)max->g=hist[i][1];
+      if(hist[i][2]>max->b)max->b=hist[i][2];
+    }
+    max_color=max->r;
+    if(max_color<max->g)max_color=max->g;
+    if(max_color<max->b)max_color=max->b;
+    for(y=0;y<COLORMAX;y++){
+      for(x=0;x<COLORMAX;x++){
+        takasa->r = (int)(COLORMAX/(double)max_color*hist[x][0]);
+        takasa->g = (int)(COLORMAX/(double)max_color*hist[x][1]);
+        takasa->b = (int)(COLORMAX/(double)max_color*hist[x][2]);
+        if(takasa->r>COLORMAX)takasa->r=COLORMAX;
+        if(takasa->g>COLORMAX)takasa->g=COLORMAX;
+        if(takasa->b>COLORMAX)takasa->b=COLORMAX;
 
-/* for(i=0; i<img->width*img->height; i++){ */
-/*   hist[img->data[i].r]++; */
-/* } */
-/* for(i=0; i<256; i++){ */
-/*   for(j=0; j<(int)(256*hist[i]/(double)max); j++){ */
-/*     pix->data[(256-j)*256 + i].r = */
-/*     pix->data[(256-j)*256 + i].g = */
-/*     pix->data[(256-j)*256 + i].b = 255; */
-/*   } */
-/* } */
+        /* max_takasa=takasa->r; */
+        /* if(max_takasa<takasa->g)max_takasa=takasa->g; */
+        /* if(max_takasa<takasa->b)max_takasa=takasa->b; */
+        if(takasa->r>COLORMAX)takasa->r=COLORMAX;
+        if(takasa->g>COLORMAX)takasa->g=COLORMAX;
+        if(takasa->b>COLORMAX)takasa->b=COLORMAX;
 
+        if(y<takasa->r)pix->r=PIXELMAX;
+        else pix->r = PIXELMIN;
+        if(y<takasa->g)pix->g=PIXELMAX;
+        else pix->g = PIXELMIN;
+        if(y<takasa->b)pix->b=PIXELMAX;
+        else pix->b = PIXELMIN;
+        setPixel(outimg,x,COLORMAX-1-y,pix);
+      }
+    }
     //----------------ここまで-----------------------
     //ファイル書き込み
     writeBMPfile(wname, outimg);
     printf("write[%s]\n", wname);
+    free(pix);
+    free(max);
+    free(takasa);
 
     //メモリ解放
     disposeImage(img);
     disposeImage(outimg);
 }
-
-
-/* void make_histogram(int n){ */
-
-/*   int i,x,y; */
-
-/*   for(i=0;i<height[n];i++) hist[i] = 0; */
-
-/*   for(y=0;y<height[n];y++) */
-/*     for(x=0;x<width[n];x++) */
-/*       hist[image[n][x][y]]++; */
-/* } */
-
-/* void make_histogram_image(int h, int n) */
-/* { */
-/*   int i,x,y; */
-/*   long int max; */
-/*   int takasa; */
-
-/*   width[n]=256; height[n]=h; */
-
-/*   max=0; */
-/*   for(i=0;i<256;i++) */
-/*     if(hist[i]>max)max=hist[i]; */
-
-/*   for(x=0;x<width[n];x++){ */
-/*     takasa = (int)(h/(double)max*hist[x]); */
-/*     if(takasa>h)takasa = h; */
-/*     for(y=0;y<h;y++) */
-/*       if(y<takasa)image[n][x][h-1-y]=0; */
-/*       else image[n][x][h-1-y]=255; */
-/*   } */
-/* } */

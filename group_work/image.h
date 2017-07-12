@@ -16,7 +16,7 @@ typedef struct STRUCT_IMAGE{
 
 
 #define PIXELMAX 255
-
+#define PIXELMIN 0
 typedef struct STRUCT_PIXEL{
     int r, g, b;
 }Pixel;
@@ -28,4 +28,3 @@ int readBMPfile(char *fname, ImageData **img);
 int writeBMPfile(char *fname, ImageData *img);
 int getPixel(ImageData *img, int x, int y, Pixel *pix);
 int setPixel(ImageData *img, int x, int y, Pixel *pix);
-
