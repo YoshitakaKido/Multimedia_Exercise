@@ -23,7 +23,7 @@ ImageData* createImage(int width, int height, int depth){
 
     /* 画像データを格納するのに必要なメモリを確保 */
     newimg->pixels = malloc(sizeof(BYTE)*byte_per_pixel*width*height);
-    
+
     if(newimg->pixels == NULL){
         free(newimg);
         return NULL;
@@ -59,7 +59,6 @@ int getPixel(ImageData *img, int x, int y, Pixel *pix){
     int adr;    /* 画素の画像上の位置 */
     int dep, val;
     BYTE *pixels;
-
     if(img == NULL)
         return -1;
     if(img->pixels == NULL)
@@ -85,7 +84,6 @@ int getPixel(ImageData *img, int x, int y, Pixel *pix){
     dep = img->depth;
     adr = x + y * img->width;
     pixels = img->pixels;
-
     if(dep == 8){ /* グレースケールの場合は、RGBすべてに同じ値をセットする */
         val = pixels[adr];
         pix->r = val;
@@ -93,12 +91,14 @@ int getPixel(ImageData *img, int x, int y, Pixel *pix){
         pix->b = val;
     }
     else if(dep == 24){
-        pixels += (adr * 3);
-        pix->r = (*pixels);
-        pixels++;
-        pix->g = (*pixels);
-        pixels++;
-        pix->b = (*pixels);
+      pixels += (adr * 3);
+      printf("%d\n",adr);
+      pix -> r = (*pixels);
+      printf("%d\n",adr);
+      pixels++;
+      pix->g = (*pixels);
+      pixels++;
+      pix->b = (*pixels);
     }
     else
         return -1;
@@ -139,6 +139,7 @@ int setPixel(ImageData *img, int x, int y, Pixel *pix){
     dep = img->depth;
     adr = x + y * img->width;
     pixels = img->pixels;
+
 
     if(dep == 8)
         pixels[adr] = correctValue(pix->r, PIXELMAX);
