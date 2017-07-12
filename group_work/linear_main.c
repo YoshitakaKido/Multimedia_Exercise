@@ -3,28 +3,28 @@
 void linear(ImageData *img, ImageData *outimg);
 
 main(int ac,char *av[]){
-    
+
     char *fname = "rgb.bmp";
     char *wname = "out.bmp";
 
     ImageData *img;
-    ImageData *outimg;    
-    
+    ImageData *outimg;
+
     //ファイルの読み込み
     readBMPfile(fname, &img);
-    
+
     outimg = createImage(img->width, img->height, img->depth);
 
     printf("read[%s]\n", fname);
-    
+
     //----------------ここから-----------------------
 
     linear(img, outimg);
 
     //----------------ここまで-----------------------
-    
+
     //ファイル書き込み
-    writeBMPfile(wname, outimg); 
+    writeBMPfile(wname, outimg);
     printf("write[%s]\n", wname);
 
     //メモリ解放
@@ -33,11 +33,11 @@ main(int ac,char *av[]){
 
 
 void linear(ImageData *img,ImageData *outimg) {
-    int x,y,i; //for文用
-    int max[3] = {}; //全要素0で初期化
+    int x,y; //for文用
+    int max[3] = {0}; //全要素0で初期化
     int min[3] = {255,255,255};
     Pixel pix; //r,g,b
-    
+
     //最大・最小階調を調べる
     for(x=0;x<img->width;x++) {
         for(y=0;y<img->height;y++) {
@@ -62,7 +62,7 @@ void linear(ImageData *img,ImageData *outimg) {
             }
         }
     }
-    
+
     for(x=0;x<img->width;x++) {
         for(y=0;y<img->height;y++) {
             getPixel(img,x,y,&pix);
