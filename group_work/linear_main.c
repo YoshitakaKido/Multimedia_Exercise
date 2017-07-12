@@ -1,7 +1,5 @@
 #include"image.h"
 
-void linear_trans(ImageData **img, ImageData **outimg);
-
 main(int ac,char *av[]){
 
     char *fname = "rgb.bmp";
@@ -18,8 +16,16 @@ main(int ac,char *av[]){
     printf("read[%s]\n", fname);
     //----------------ここから-----------------------
     
-    linear_trans(&img, &outimg);
+    int x, y;
+    Pixel *pix;
+    pix = malloc(sizeof(img->pixels));
 
+    for(y = 0; y < img->height; y++){
+        for(x = 0; x < img->width; x++){
+            getPixel(img, x, y, pix);
+            setPixel(outimg, x, y, pix);
+        }
+    }
 
     //----------------ここまで-----------------------
     //ファイル書き込み
@@ -28,19 +34,4 @@ main(int ac,char *av[]){
 
     //メモリ解放
     disposeImage(img);
-}
-
-
-void linear_trans(ImageData **img, ImageData **outimg){
-    int x, y;
-    int max = 0, min = 255;
-    Pixel *pix;
-    // 最小階調値と最大階調値を求める
-    for(y = 0; y <= outimg->height; y++){
-        for(x = 0; x <= outimg->width; x++){
-            getPixel(img, x, y, pix);
-            if() 
-        }
-    }
-
 }
