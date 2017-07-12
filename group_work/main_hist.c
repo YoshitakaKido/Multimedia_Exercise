@@ -46,7 +46,6 @@ main(int ac,char *av[]){
   writeBMPfile(wname_linear, outimg);
   printf("write[%s]\n", wname_f);
 
-
   make_histogram_image_r(outimg,pix);
   writeBMPfile(wname_r, outimg);
   printf("write[%s]\n", wname_r);
@@ -148,11 +147,8 @@ void make_histogram_image_r(ImageData *outimg, Pixel *pix){
       setPixel(outimg,x,COLORMAX-1-y,pix);
     }
   }
-
-  free(max);
-  free(takasa);
-
 }
+
 void make_histogram_image_g(ImageData *outimg, Pixel *pix){
   Pixel *max;
   Pixel *takasa;
@@ -176,11 +172,17 @@ void make_histogram_image_g(ImageData *outimg, Pixel *pix){
       else pix->g = PIXELMIN;
 
       setPixel(outimg,x,COLORMAX-1-y,pix);
+
+      if(y<takasa->g)pix->g=PIXELMAX;
+      else pix->g = PIXELMIN;
+      setPixel(outimg,x,COLORMAX-1-y,pix);
+
     }
   }
 
   free(max);
   free(takasa);
+
 }
 void make_histogram_image_b(ImageData *outimg, Pixel *pix){
   Pixel *max;
