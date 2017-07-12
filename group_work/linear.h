@@ -1,1 +1,3 @@
-void linear(ImageData *inputimg, ImageData *outimg);
+#include "image.h"
+
+void Linear(ImageData *inputimg, ImageData *outimg);
