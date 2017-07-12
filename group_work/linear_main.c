@@ -1,9 +1,10 @@
-#include"image.h"
+#include "image.h"
+#include "linear.h"
 
 main(int ac,char *av[]){
-
-    char *fname = "rgb.bmp";
-    char *wname = "out.bmp";
+    
+    /* char *fname = "rgb.bmp"; */
+    /* char *wname = "out.bmp"; */
     
     ImageData *img; //入力画像
     ImageData *outimg;
@@ -14,20 +15,24 @@ main(int ac,char *av[]){
     outimg = createImage(img->width, img->height, img->depth);
 
     printf("read[%s]\n", fname);
+    
     //----------------ここから-----------------------
     
     int x, y;
     Pixel *pix;
+    
+    //メモリ確保
     pix = malloc(sizeof(img->pixels));
 
     for(y = 0; y < img->height; y++){
         for(x = 0; x < img->width; x++){
-            getPixel(img, x, y, pix);
+            getPixel(img, x, y, pix);  
             setPixel(outimg, x, y, pix);
         }
     }
 
     //----------------ここまで-----------------------
+    
     //ファイル書き込み
     writeBMPfile(wname, outimg); 
     printf("write[%s]\n", wname);
