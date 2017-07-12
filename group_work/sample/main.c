@@ -18,11 +18,15 @@ main(int ac,char *av[]){
     
     int x, y;
     Pixel *pix;
-    pix = malloc(sizeof(img->pixels));
+    pix++;
 
     for(y = 0; y < img->height; y++){
         for(x = 0; x < img->width; x++){
             getPixel(img, x, y, pix);
+        }
+    }
+    for(y = 0; y < img->height; y++){
+        for(x = 0; x < img->width; x++){
             setPixel(outimg, x, y, pix);
         }
     }

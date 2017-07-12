@@ -59,11 +59,12 @@ int getPixel(ImageData *img, int x, int y, Pixel *pix){
     int adr;    /* 画素の画像上の位置 */
     int dep, val;
     BYTE *pixels;
+    
     if(img == NULL)
         return -1;
     if(img->pixels == NULL)
         return -1;
-
+    
     /* 画像外の座標が指定された場合の処理(最も近い画像上の画素を参照する) */
     if(x < 0){
         x = 0;
@@ -84,6 +85,7 @@ int getPixel(ImageData *img, int x, int y, Pixel *pix){
     dep = img->depth;
     adr = x + y * img->width;
     pixels = img->pixels;
+
     if(dep == 8){ /* グレースケールの場合は、RGBすべてに同じ値をセットする */
         val = pixels[adr];
         pix->r = val;
@@ -92,9 +94,7 @@ int getPixel(ImageData *img, int x, int y, Pixel *pix){
     }
     else if(dep == 24){
       pixels += (adr * 3);
-      printf("%d\n",adr);
-      pix -> r = (*pixels);
-      printf("%d\n",adr);
+      pix->r = (*pixels);
       pixels++;
       pix->g = (*pixels);
       pixels++;
