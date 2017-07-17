@@ -5,9 +5,7 @@
 
 void make_histogram(ImageData *img,Pixel *pix);
 void make_histogram_image_full(ImageData *outimg, Pixel *pix);
-void make_histogram_image_r(ImageData *outimg, Pixel *pix);
-void make_histogram_image_g(ImageData *outimg, Pixel *pix);
-void make_histogram_image_b(ImageData *outimg, Pixel *pix);
+void make_histgram_image_rgb(ImageData *outimg, Pixel *pix,int num);
 void Initialization_histgram();
 void save(ImageData *img,Pixel *pix,ImageData *outimg,int width[], int height[]);
 
@@ -25,7 +23,7 @@ main(int ac,char *av[]){
   char *wname_image = "out_image.bmp";//出力する画像
   char *wname_rgb = "rgb_hist.bmp";//赤、緑、青のそれぞれの色のヒストグラムの画像
   char *wname_color = "color_hist.bmp";//三原色を組み合わせたヒストグラムの画像
-  ImageData *img; //入力画像
+  ImageData *img; //画像
   ImageData *outrgb;
   ImageData *outrgb2;
   ImageData *outimg;
@@ -37,88 +35,126 @@ main(int ac,char *av[]){
 
   //元の画像の読み込み
   readBMPfile(fname, &img);
+
+  //座標の初期化
   int width[2]={0,img->width},height[2]={0,img->height};
+  //画像データの比較画像
   outimg = createImage(img->width*2,img->height, img->depth);
+  //線形変換後のデータ
   outlinear = createImage(img->width,img->height, img->depth);
+  //ヒストグラムの画像データ
   outrgb=createImage(COLORMAX,COLORMAX,img->depth);
+  //色別のヒストグラムの画像データ
   outrgb2=createImage(COLORMAX*2,COLORMAX*3,img->depth);
+  //三原色のヒストグラムの画像データ
   outcolor = createImage(COLORMAX*2,COLORMAX,img->depth);
-  //線形変換後の画像を出力
+
+  //線形変換後の画像を作成
   linear(img,outlinear);
+  //ファイルに書き込み
   writeBMPfile(wname_linear, outlinear);
 
   //img
   printf("read[%s]\n", fname);
+
+  //画像データの保存
   save(img,pix,outimg,width,height);
 
   //hist
   make_histogram(img,pix);
   make_histogram_image_full(outrgb,pix);
+  //保存する座標を決定
   width[1]=COLORMAX;
   height[1]=COLORMAX;
+  //画像データの保存
   save(outrgb,pix,outcolor,width,height);
+
   //Red_histgram
-  make_histogram_image_r(outrgb,pix);
+  make_histgram_image_rgb(outrgb,pix,0);
+  //保存する座標を決定
   width[0]=0;
   width[1]=COLORMAX;
   height[1]=COLORMAX;
+  //画像データの保存
   save(outrgb,pix,outrgb2,width,height);
+
   //Green_histgram
-  make_histogram_image_g(outrgb,pix);
+  make_histgram_image_rgb(outrgb,pix,1);
+  //保存する座標を決定
   height[0]=COLORMAX;
   height[1]=COLORMAX*2;
+  //画像データの保存
   save(outrgb,pix,outrgb2,width,height);
+
   //Blue_histgram
-  make_histogram_image_b(outrgb,pix);
+  make_histgram_image_rgb(outrgb,pix,2);
+  //保存する座標を決定
   height[0]=COLORMAX*2;
   height[1]=COLORMAX*3;
+  //画像データの保存
   save(outrgb,pix,outrgb2,width,height);
 
 
+  //ここから線形変換-----------------------------------------------
 
+  //ヒストグラムの初期化
   Initialization_histgram();
-  //線形変換
 
+
+  //線形変換後の画像のファイル読み込み
   readBMPfile(fname_linear,&img);
 
-
   printf("read[%s]\n", fname_linear);
+  //保存する座標を決定
   width[0]=img->width;
   width[1]=img->width*2;
   height[0]=0;
   height[1]=img->height;
+  //画像データの保存
   save(outlinear,pix,outimg,width,height);
 
   //hist
   make_histogram(outlinear,pix);
   make_histogram_image_full(outrgb,pix);
+  //保存する座標を決定
   width[0]=COLORMAX;
   width[1]=COLORMAX*2;
   height[0]=0;
   height[1]=COLORMAX;
+  //画像データを保存
   save(outrgb,pix,outcolor,width,height);
+
   //Red_histgram
-  make_histogram_image_r(outrgb,pix);
+  make_histgram_image_rgb(outrgb,pix,0);
+  //保存する座標を決定
   width[0]=COLORMAX;
   width[1]=COLORMAX*2;
   height[1]=COLORMAX;
+  //画像データを保存
   save(outrgb,pix,outrgb2,width,height);
+
   //Green_histgram
-  make_histogram_image_g(outrgb,pix);
+  make_histgram_image_rgb(outrgb,pix,1);
+  //保存する座標を決定
   height[0]=COLORMAX;
   height[1]=COLORMAX*2;
+  //画像データを保存
   save(outrgb,pix,outrgb2,width,height);
+
   //Blue_histgram
-  make_histogram_image_b(outrgb,pix);
+  make_histgram_image_rgb(outrgb,pix,2);
+  //保存する座標を決定
   height[0]=COLORMAX*2;
   height[1]=COLORMAX*3;
+  //画像データを保存
   save(outrgb,pix,outrgb2,width,height);
+
+  //ファイル書き込み
   writeBMPfile(wname_image, outimg);
   writeBMPfile(wname_rgb, outrgb2);
   writeBMPfile(wname_color, outcolor);
 
-  //ファイル書き込み
-
+  //領域の解放
   free(pix);
 
   //メモリ解放
@@ -127,7 +163,11 @@ main(int ac,char *av[]){
   disposeImage(outrgb);
   disposeImage(outcolor);
   disposeImage(outlinear);
+
 }
+
+
+/* ヒストグラムの作成 */
 void make_histogram(ImageData *img,Pixel *pix){
   int x,y;
   for(y=0; y < img->height ;y++){
@@ -139,24 +179,31 @@ void make_histogram(ImageData *img,Pixel *pix){
     }
   }
 }
+/* 三原色のヒストグラムの画像を作成 */
 void make_histogram_image_full(ImageData *outimg,Pixel *pix){
   Pixel *max;
   Pixel *takasa;
   int max_color;
   int x,y,i;
+  //領域の確保
   max=malloc(sizeof(void*));
   takasa=malloc(sizeof(void*));
+  //初期化
   max->r=PIXELMIN;
   max->g=PIXELMIN;
   max->b=PIXELMIN;
+  //三原色それぞれの最大値の決定
   for(i=0;i<COLORMAX;i++){
     if(hist[i][0]>max->r)max->r=hist[i][0];
     if(hist[i][1]>max->g)max->g=hist[i][1];
     if(hist[i][2]>max->b)max->b=hist[i][2];
   }
+  //色の最大値を決定
   max_color=max->r;
   if(max_color<max->g)max_color=max->g;
   if(max_color<max->b)max_color=max->b;
+
+  //ヒストグラムの作成
   for(y=0;y<COLORMAX;y++){
     for(x=0;x<COLORMAX;x++){
       takasa->r = (int)(COLORMAX/(double)max_color*hist[x][0]);
@@ -178,103 +225,60 @@ void make_histogram_image_full(ImageData *outimg,Pixel *pix){
     }
   }
 
+  //領域の解放
   free(max);
   free(takasa);
 
 }
-void make_histogram_image_r(ImageData *outimg, Pixel *pix){
-  Pixel *max;
-  Pixel *takasa;
+
+/* 色別のヒストグラムの画像を作成 */
+void make_histgram_image_rgb(ImageData *outimg, Pixel *pix,int num){
+
+  int takasa;
   int max_color;
   int x,y,i;
-  max=malloc(sizeof(void*));
-  takasa=malloc(sizeof(void*));
-  max->r=PIXELMIN;
-  pix->g=PIXELMIN;
-  pix->b=PIXELMIN;
-  for(i=0;i<COLORMAX;i++){
-    if(hist[i][0]>max->r)max->r=hist[i][0];
-  }
-  max_color=max->r;
-  for(y=0;y<COLORMAX;y++){
-    for(x=0;x<COLORMAX;x++){
-      takasa->r = (int)(COLORMAX/(double)max_color*hist[x][0]);
-      if(takasa->r>COLORMAX)takasa->r=COLORMAX;
-
-
-      if(y<takasa->r)pix->r=PIXELMAX;
-      else pix->r = PIXELMIN;
-
-      setPixel(outimg,x,COLORMAX-1-y,pix);
-    }
-  }
-}
-
-void make_histogram_image_g(ImageData *outimg, Pixel *pix){
-  Pixel *max;
-  Pixel *takasa;
-  int max_color;
-  int x,y,i;
-  max=malloc(sizeof(void*));
-  takasa=malloc(sizeof(void*));
-  max->g=PIXELMIN;
-  pix->r=PIXELMIN;
-  pix->b=PIXELMIN;
-  for(i=0;i<COLORMAX;i++){
-    if(hist[i][1]>max->g)max->g=hist[i][1];
-  }
-  max_color=max->g;
-  for(y=0;y<COLORMAX;y++){
-    for(x=0;x<COLORMAX;x++){
-      takasa->g = (int)(COLORMAX/(double)max_color*hist[x][1]);
-      if(takasa->g>COLORMAX)takasa->g=COLORMAX;
-
-      if(y<takasa->g)pix->g=PIXELMAX;
-      else pix->g = PIXELMIN;
-
-      setPixel(outimg,x,COLORMAX-1-y,pix);
-
-      if(y<takasa->g)pix->g=PIXELMAX;
-      else pix->g = PIXELMIN;
-      setPixel(outimg,x,COLORMAX-1-y,pix);
-
-    }
-  }
-
-  free(max);
-  free(takasa);
-
-}
-void make_histogram_image_b(ImageData *outimg, Pixel *pix){
-  Pixel *max;
-  Pixel *takasa;
-  int max_color;
-  int x,y,i;
-  max=malloc(sizeof(void*));
-  takasa=malloc(sizeof(void*));
-  max->b=PIXELMIN;
+  //初期化
+  max_color=PIXELMIN;
   pix->r=PIXELMIN;
   pix->g=PIXELMIN;
+  pix->b=PIXELMIN;
+  //色の最大値を決定
   for(i=0;i<COLORMAX;i++){
-    if(hist[i][2]>max->b)max->b=hist[i][2];
+    if(hist[i][num]>max_color)max_color=hist[i][num];
   }
-  max_color=max->b;
+  //選んだ色のヒストグラムを作成
   for(y=0;y<COLORMAX;y++){
     for(x=0;x<COLORMAX;x++){
-      takasa->b = (int)(COLORMAX/(double)max_color*hist[x][2]);
-      if(takasa->b>COLORMAX)takasa->b=COLORMAX;
+      takasa = (int)(COLORMAX/(double)max_color*hist[x][num]);
+      if(takasa>COLORMAX)takasa=COLORMAX;
 
-      if(y<takasa->b)pix->b=PIXELMAX;
-      else pix->b = PIXELMIN;
-
+      //選んだ色の最大のヒストグラムの大きさを決定
+      switch(num){
+      case 0:
+        if(y<takasa)pix->r=PIXELMAX;
+        else pix->r = PIXELMIN;
+        break;
+      case 1:
+        if(y<takasa)pix->g=PIXELMAX;
+        else pix->g = PIXELMIN;
+        break;
+      case 2:
+        if(y<takasa)pix->b=PIXELMAX;
+        else pix->b = PIXELMIN;
+        break;
+      default:
+        printf("赤:0 緑:1 青:2にしてください。\n");
+        break;
+      }
+      //画像データの保存
       setPixel(outimg,x,COLORMAX-1-y,pix);
     }
   }
-
-  free(max);
-  free(takasa);
 }
 
+
+
+//ヒストグラムの初期化
 void Initialization_histgram(){
   int i,col;
   for(i=0;i<COLORMAX;i++)
@@ -282,6 +286,12 @@ void Initialization_histgram(){
       hist[i][col]=0;
 }
 
+/* imgの画像データをoutimgに保存させる
+ width[0]:outimgのx座標の始点
+ width[1]:outimgのx座標の終点
+ height[0]:outimgのy座標の始点
+ height[1]:outimgのy座標の終点
+*/
 void save(ImageData *img,Pixel *pix,ImageData *outimg,int width[], int height[]){
   int x,y;
 
@@ -296,7 +306,8 @@ void save(ImageData *img,Pixel *pix,ImageData *outimg,int width[], int height[])
 }
 
 
-
+/* img:線形変換前の画像
+   outimg:線形変換後の画像*/
 void linear(ImageData *img,ImageData *outimg) {
     int x,y; //for文用
     int max[3] = {0}; //全要素0で初期化
@@ -328,6 +339,7 @@ void linear(ImageData *img,ImageData *outimg) {
         }
     }
 
+    //画像データの保存
     for(x=0;x<img->width;x++) {
         for(y=0;y<img->height;y++) {
             getPixel(img,x,y,&pix);
