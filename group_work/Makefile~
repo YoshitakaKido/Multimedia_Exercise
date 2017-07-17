@@ -1,0 +1,13 @@
+ 
+
+CPPOPT = -g
+tinyC: tinyC.o arm.o mips.o sub.o Makefile
+	g++ $(CPPOPT) -o tinyC tinyC.o arm.o mips.o sub.o
+arm.o: sub.h arm.h arm.C Makefile
+	g++ $(CPPOPT) -c  arm.C
+mips.o: sub.h arm.h mips.h mips.C Makefile
+	g++ $(CPPOPT) -c  mips.C
+sub.o: sub.h arm.h mips.h sub.C Makefile
+	g++ $(CPPOPT) -c  sub.C
+tinyC.o: sub.h arm.h mips.h tinyC.C Makefile
+	g++ $(CPPOPT) -c tinyC.C

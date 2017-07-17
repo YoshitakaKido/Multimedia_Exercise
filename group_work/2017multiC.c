@@ -9,123 +9,115 @@ void make_histogram_image_r(ImageData *outimg, Pixel *pix);
 void make_histogram_image_g(ImageData *outimg, Pixel *pix);
 void make_histogram_image_b(ImageData *outimg, Pixel *pix);
 void Initialization_histgram();
-void save(ImageData *img,Pixel *pix,ImageData *outimg,int num,int width[], int height[]);
+void save(ImageData *img,Pixel *pix,ImageData *outimg,int width[], int height[]);
+
+
+void linear(ImageData *img,ImageData *outimg);
+
 int hist[256][3]={{0},{0}};
 
 
 main(int ac,char *av[]){
 
-  char *fname = "rgb.bmp";
-  char *fname_linear = "out.bmp";
-  char *wname_image = "out_image.bmp";
-  char *wname_rgb = "rgb_hist.bmp";
+  char *fname = "rgb.bmp";//元の画像
+  char *fname_linear = "out.bmp";//線形変換の画像
+  char *wname_linear = "out.bmp";//線形変換後の画像
+  char *wname_image = "out_image.bmp";//出力する画像
+  char *wname_rgb = "rgb_hist.bmp";//赤、緑、青のそれぞれの色のヒストグラムの画像
+  char *wname_color = "color_hist.bmp";//三原色を組み合わせたヒストグラムの画像
   ImageData *img; //入力画像
   ImageData *outrgb;
   ImageData *outrgb2;
   ImageData *outimg;
- Pixel *pix;
+  ImageData *outcolor;
+  ImageData *outlinear;
+  Pixel *pix;
 
   pix=malloc(sizeof(void*));
 
-  //ファイルの読み込み
+  //元の画像の読み込み
   readBMPfile(fname, &img);
   int width[2]={0,img->width},height[2]={0,img->height};
   outimg = createImage(img->width*2,img->height, img->depth);
+  outlinear = createImage(img->width,img->height, img->depth);
   outrgb=createImage(COLORMAX,COLORMAX,img->depth);
-  outrgb2=createImage(COLORMAX*8,COLORMAX*3,img->depth);
-//img
+  outrgb2=createImage(COLORMAX*2,COLORMAX*3,img->depth);
+  outcolor = createImage(COLORMAX*2,COLORMAX,img->depth);
+  //線形変換後の画像を出力
+  linear(img,outlinear);
+  writeBMPfile(wname_linear, outlinear);
+
+  //img
   printf("read[%s]\n", fname);
-  save(img,pix,outimg,1,width,height);
+  save(img,pix,outimg,width,height);
 
   //hist
   make_histogram(img,pix);
   make_histogram_image_full(outrgb,pix);
-  width[1]=COLORMAX*3;
-  height[1]=COLORMAX*3;
-  save(outrgb,pix,outrgb2,3,width,height);
+  width[1]=COLORMAX;
+  height[1]=COLORMAX;
+  save(outrgb,pix,outcolor,width,height);
   //Red_histgram
   make_histogram_image_r(outrgb,pix);
-  width[0]=COLORMAX*6;
-  width[1]=COLORMAX*7;
+  width[0]=0;
+  width[1]=COLORMAX;
   height[1]=COLORMAX;
-  save(outrgb,pix,outrgb2,1,width,height);
+  save(outrgb,pix,outrgb2,width,height);
   //Green_histgram
   make_histogram_image_g(outrgb,pix);
   height[0]=COLORMAX;
   height[1]=COLORMAX*2;
-  save(outrgb,pix,outrgb2,1,width,height);
+  save(outrgb,pix,outrgb2,width,height);
   //Blue_histgram
   make_histogram_image_b(outrgb,pix);
   height[0]=COLORMAX*2;
   height[1]=COLORMAX*3;
-  save(outrgb,pix,outrgb2,1,width,height);
+  save(outrgb,pix,outrgb2,width,height);
+
 
 
   Initialization_histgram();
-  readBMPfile(fname_linear, &img);
+  //線形変換
+
+  readBMPfile(fname_linear,&img);
 
 
-
-  printf("read[%s]\n", fname);
+  printf("read[%s]\n", fname_linear);
   width[0]=img->width;
   width[1]=img->width*2;
   height[0]=0;
   height[1]=img->height;
-  save(img,pix,outimg,1,width,height);
+  save(outlinear,pix,outimg,width,height);
 
   //hist
-  make_histogram(img,pix);
+  make_histogram(outlinear,pix);
   make_histogram_image_full(outrgb,pix);
-  width[0]=COLORMAX*3;
-  width[1]=COLORMAX*6;
+  width[0]=COLORMAX;
+  width[1]=COLORMAX*2;
   height[0]=0;
-  height[1]=COLORMAX*3;
-  save(outrgb,pix,outrgb2,3,width,height);
+  height[1]=COLORMAX;
+  save(outrgb,pix,outcolor,width,height);
   //Red_histgram
   make_histogram_image_r(outrgb,pix);
-  width[0]=COLORMAX*7;
-  width[1]=COLORMAX*8;
+  width[0]=COLORMAX;
+  width[1]=COLORMAX*2;
   height[1]=COLORMAX;
-  save(outrgb,pix,outrgb2,1,width,height);
+  save(outrgb,pix,outrgb2,width,height);
   //Green_histgram
   make_histogram_image_g(outrgb,pix);
   height[0]=COLORMAX;
   height[1]=COLORMAX*2;
-  save(outrgb,pix,outrgb2,1,width,height);
+  save(outrgb,pix,outrgb2,width,height);
   //Blue_histgram
   make_histogram_image_b(outrgb,pix);
   height[0]=COLORMAX*2;
   height[1]=COLORMAX*3;
-  save(outrgb,pix,outrgb2,1,width,height);
+  save(outrgb,pix,outrgb2,width,height);
   writeBMPfile(wname_image, outimg);
   writeBMPfile(wname_rgb, outrgb2);
+  writeBMPfile(wname_color, outcolor);
 
   //ファイル書き込み
-  /* writeBMPfile(wname_image, outimg); */
-  /* printf("write[%s]\n", wname_image); */
-  /* writeBMPfile(wname_rgb, outrgb); */
-  /* Initialization_histgram(); */
-
-  /* readBMPfile(fname_linear, &img); */
-  /* make_histogram(img,pix); */
-  /* make_histogram_image_full(outimg,pix); */
-  /* writeBMPfile(wname_linear, outimg); */
-  /* printf("write[%s]\n", wname_f); */
-
-  /* make_histogram_image_r(outimg,pix); */
-  /* writeBMPfile(wname_r, outimg); */
-  /* printf("write[%s]\n", wname_r); */
-
-  /* make_histogram_image_g(outimg,pix); */
-  /* writeBMPfile(wname_g, outimg); */
-  /* printf("write[%s]\n", wname_g); */
-
-  /* make_histogram_image_b(outimg,pix); */
-  /* writeBMPfile(wname_b, outimg); */
-  /* printf("write[%s]\n", wname_b); */
-
-
-
 
   free(pix);
 
@@ -133,6 +125,8 @@ main(int ac,char *av[]){
   disposeImage(img);
   disposeImage(outimg);
   disposeImage(outrgb);
+  disposeImage(outcolor);
+  disposeImage(outlinear);
 }
 void make_histogram(ImageData *img,Pixel *pix){
   int x,y;
@@ -288,12 +282,59 @@ void Initialization_histgram(){
       hist[i][col]=0;
 }
 
-void save(ImageData *img,Pixel *pix,ImageData *outimg,int num,int width[], int height[]){
+void save(ImageData *img,Pixel *pix,ImageData *outimg,int width[], int height[]){
   int x,y;
+
   for(y=height[0];y<height[1];y++){
     for(x=width[0];x<width[1];x++){
-      getPixel(img, (x/num%img->width), (y/num%img->height), pix);
+
+      getPixel(img, (x%img->width), (y%img->height), pix);
+
       setPixel(outimg,x,y,pix);
     }
   }
+}
+
+
+
+void linear(ImageData *img,ImageData *outimg) {
+    int x,y; //for文用
+    int max[3] = {0}; //全要素0で初期化
+    int min[3] = {255,255,255};
+    Pixel pix; //r,g,b
+
+    //最大・最小階調を調べる
+    for(x=0;x<img->width;x++) {
+        for(y=0;y<img->height;y++) {
+            getPixel(img,x,y,&pix);
+            if(max[0] < pix.r) {
+                max[0] = pix.r;
+            }
+            if(max[1] < pix.g) {
+                max[1] = pix.g;
+            }
+            if(max[2] < pix.b) {
+                max[2] = pix.b;
+            }
+            if(min[0] > pix.r) {
+                min[0] = pix.r;
+            }
+            if(min[1] > pix.g) {
+                min[1] = pix.g;
+            }
+            if(min[2] > pix.b) {
+                min[2] = pix.b;
+            }
+        }
+    }
+
+    for(x=0;x<img->width;x++) {
+        for(y=0;y<img->height;y++) {
+            getPixel(img,x,y,&pix);
+            pix.r = (int)(((double)(pix.r - min[0]) / (max[0] - min[0])) * 255);
+            pix.g = (int)(((double)(pix.g - min[1]) / (max[1] - min[1])) * 255);
+            pix.b = (int)(((double)(pix.b - min[2]) / (max[2] - min[2])) * 255);
+            setPixel(outimg,x,y,&pix);
+        }
+    }
 }
