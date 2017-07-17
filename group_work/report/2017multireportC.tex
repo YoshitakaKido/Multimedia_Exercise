@@ -1,0 +1,147 @@
+\documentclass[a4j]{celb-report}
+\usepackage[dvipdfmx]{graphicx,color}
+\usepackage{here}
+\usepackage{amsmath}
+\lstset{language=c,
+  basicstyle=\ttfamily\scriptsize,
+  commentstyle=\textit,
+  classoffset=1,
+  keywordstyle=\bfseries,
+  frame=tRBl,
+  framesep=5pt,
+  showstringspaces=false,
+  numbers=left,
+  stepnumber=1,
+  numberstyle=\tiny,
+  tabsize=2
+  }
+
+%%%
+%%% 計算機工学実験Bレポートテンプレート
+%%%  このテンプレートを使う場合，celb-report.clsとjlisting.styが必要です．
+%%%  このファイルと同じディレクトリに置いておいてください．
+%%%
+
+%%%
+%%% まずはここで各種設定
+%%%
+
+\begin{document}
+
+
+\section{グループについて}
+\begin{description}
+
+ \item[グループ] C
+ \item[s153038 木戸 喜隆]
+ \item[s153071 長迫　強士]
+\end{description}
+% ----------------------------------------------------
+\section{プログラムファイルの実行方法}
+プログラムの実行についてはMakefileを作成した。以下の操作を行い実行する
+%
+% --- 実行結果ここから
+\begin{lstlisting}[numbers=none,basicstyle=\ttfamily\footnotesize, frame=single]
+s153071@av0025:~/classes/maltimedia/11/Multimedia_Exercise/group_work$ make
+gcc -o 2017multiC 2017multiC.c bmp.c image.c
+s153071@av0025:~/classes/maltimedia/11/Multimedia_Exercise/group_work$ ./2017multiC
+read[rgb.bmp]
+read[out.bmp]
+s153071@av0025:~/classes/maltimedia/11/Multimedia_Exercise/group_work$
+\end{lstlisting}
+\subsection{プログラムリスト}
+\lstinputlisting[caption=Makefile]{./../Makefile}
+% ----------------------------------------------------
+\section{プログラムの構造説明}
+
+ \begin{figure}[H]
+  \begin{center}
+   \includegraphics[width=10cm]{./main.eps}
+  \end{center}
+ \end{figure}
+\subsection{ヘッダ部(1から13行目まで)}
+ヘッダ部ではヘッダファイルの呼び出しとヒストグラムの画像の大きさなどのマクロとプロトタイプ宣言を記述した。また、ヒストグラムで用いる変数を二次元配列グローバル変数にすることでファイル内であればどこでも使用できるようにした。関数についてはImageData型の変数については省略している。
+
+\subsection{main関数}
+\subsubsection*{15から48行目まで}
+17から31行目までは変数の宣言を行い、33行目から48行目までは画像ファイルの読み込みや初期化などを行っている。
+また、ImageData型変数の初期化では画像を連結するために以下のように初期化している。
+\begin{itemize}
+ \item outimg :元の画像と線形変換後の画像の比較を行うため横幅を２倍にする
+ \item outlinear :線形変換後のデータを保持
+ \item outrgb :ヒストグラムの画像データの保持
+ \item outrgb2 :元の画像と線形変換後の画像の赤、緑、青のヒストグラムの比較を行うため横幅２倍縦幅３倍にする
+ \item outcolor :元の画像と線形変換後の画像の三色合成のヒストグラムの比較を行うため横幅を２倍にする
+\end{itemize}
+\subsubsection*{50から93行目まで}
+51行目から53行目までではlinear関数を呼び出し線形変換後の画像を作成してからファイルに出力している。59行目ではsave関数を呼び出し最初に読み込んだ画像データを連結する画像データに保存している。
+
+\subsubsection*{99から148行目まで}
+99行目でヒストグラムの初期化をする。103行目で線形変換後のファイルを読み込み、線形変換後の画像とヒストグラムを保存している。
+
+\subsubsection*{150から161行目まで}
+ファイルの書き込みとImageData型とPixel型の領域の解放を行っている。
+
+\subsection{関数について}
+\begin{minipage}{0.5\hsize}
+ \begin{figure}[H]
+  \includegraphics[width=8cm]{./make_hist.eps}
+ \end{figure}
+\end{minipage}
+\begin{minipage}{0.5\hsize}
+ \begin{figure}[H]
+  \includegraphics[width=8cm]{./make_histgram_image_full.eps}
+ \end{figure}
+\end{minipage}
+
+\begin{minipage}{0.5\hsize}
+ \begin{figure}[H]
+  \includegraphics[width=6cm]{./Initilization_histgram.eps}
+ \end{figure}
+\end{minipage}
+\begin{minipage}{0.5\hsize}
+ \begin{figure}[H]
+  \includegraphics[width=6cm]{./save.eps}
+ \end{figure}
+\end{minipage}
+
+\begin{minipage}{0.5\hsize}
+ \begin{figure}[H]
+  \includegraphics[width=6cm]{./linear.eps}
+ \end{figure}
+\end{minipage}
+
+ \begin{figure}[H]
+  \begin{center}
+  \includegraphics[width=9cm]{./make_histgram_image_rgb.eps}
+  \end{center}
+ \end{figure}
+
+
+\subsubsection*{make\_hist関数}
+
+画像の色をgetPixel関数で抽出し、赤、緑、青のそれぞれの階調値に対応したhist配列にインクリメントする。
+\subsubsection*{make\_histgram\_image\_full関数}
+三原色それぞれの階調値の最大値の決定をして、その中で最も多い階調値を決定する。そして、三原色それぞれのヒストグラムを一つの画像に作成する。
+
+\subsubsection*{make\_histgram\_image\_rgb関数}
+numの値により赤、緑、青のどれか一つの階調値の最大値を決定し、switch文で選んだ色の最大のヒストグラムの高さを決定する。選んだ色のヒストグラムを作成し、画像データの保存を行う。
+\subsubsection*{Initilization\_histgram関数}
+hist配列を0で初期化する。
+\subsubsection*{save関数}
+データを保存する関数でwidth配列で横幅、height配列で縦幅を指定し、そこに画像データを保存する。
+\subsubsection*{linear関数}
+valueは現在の階調値、maxは最大階調値、minは最小階調値、new valueは線形変換後の階調値として
+$$new value=\frac{value-min}{max-min}\times{255}$$
+の式を用いて、三原色それぞれ行った。
+
+ \section{グループとしてのプログラムの工夫}
+  \subsection{関数に分けてプログラムをわかりやすくした}
+make\_hist関数やmake\_histgram\_image\_full(またはrgb)関数に分けることでヒストグラムの作成する方法を細分化し、ソースコードが読みやすくするようにできる限り分かりやすくした。fullとrgbを分けたのは感覚的に理解してもらうためである。またsave関数、linear関数、Initialization\_histgram関数なども同様である。
+  \subsection{画像を連結することで画像の変化を比較しやすくした。}
+  元の画像と線形変換後の画像、その3色合成したヒストグラム、赤、緑、青の３つに分けたヒストグラムをそれぞれ３つの画像に連結してデータを保存することで比較ができるようになった。左が変換前の画像で右が変換後の画像である。
+% \subsection{線形変換をする関数ではアドレスを用いた方法によりアロー演算子ではなくピリオドで書いた。}
+% linear関数内だけの話であるが、他の方法ではアロー演算子を用いて画像を操作するのに対し、アドレスを直接操作することでmallocによる初期化が不用で、ピリオド一つでソースコードを書くことができ、また領域の解放をしなくてすむ。
+  \subsection{連結するとき配列を用いて座標の指定を行い好きな場所に保存することができるようにした}
+  同じサイズの画像同士であればwidth配列とheight配列による座標の指定をすることで画像のどこにでもデータを保存することができる。また感覚的にわかりやすくするため数の小さい方を画像データの座標の最小値、大きい方を画像データの座標の最大値としている。今回使用しなかったが画像の拡大縮小をすることができ、numの値により画像サイズを変えることができる。ただし、画像は荒くなる。
+\end{document}
